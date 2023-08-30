@@ -1,10 +1,10 @@
-import { describe, it } from "node:test";
+import { describe, test } from "node:test";
 import assert from "node:assert";
-import { Project, ProjectStatus, Task } from "../entities";
+import { Project, ProjectStatus, Task } from "../../entities";
 
 describe("Project Entity", function () {
   describe("constructor", function () {
-    it("should create a project", function () {
+    test("should create a project", function () {
       const props = {
         name: "test",
         description: "test",
@@ -25,7 +25,7 @@ describe("Project Entity", function () {
   });
 
   describe("create", function () {
-    it("should create a project", function () {
+    test("should create a project", function () {
       const props = {
         name: "test",
         description: "test",
@@ -44,7 +44,7 @@ describe("Project Entity", function () {
   });
 
   describe("changeName", function () {
-    it("should change the name of the project", function () {
+    test("should change the name of the project", function () {
       const props = {
         name: "test",
         description: "test",
@@ -58,7 +58,7 @@ describe("Project Entity", function () {
   });
 
   describe("changeDescription", function () {
-    it("should change the description of the project", function () {
+    test("should change the description of the project", function () {
       const props = {
         name: "test",
         description: "test",
@@ -72,7 +72,7 @@ describe("Project Entity", function () {
   });
 
   describe("changeForecastedDate", function () {
-    it("should change the forecasted date of the project", function () {
+    test("should change the forecasted date of the project", function () {
       const props = {
         name: "test",
         description: "test",
@@ -87,7 +87,7 @@ describe("Project Entity", function () {
   });
 
   describe("start", function () {
-    it("should start the project", function () {
+    test("should start the project", function () {
       const props = {
         name: "test",
         description: "test",
@@ -95,12 +95,13 @@ describe("Project Entity", function () {
         forecasted_at: null,
       };
       const project = Project.create(props);
-      project.start();
+      const started_at = new Date();
+      project.start(started_at);
       assert.strictEqual(project.status, ProjectStatus.Active);
-      assert.ok(project.started_at);
+      assert.strictEqual(project.started_at, started_at);
     });
 
-    it("should throw an error if the project is already active", function () {
+    test("should throw an error if the project is already active", function () {
       const props = {
         name: "test",
         description: "test",
@@ -108,11 +109,11 @@ describe("Project Entity", function () {
         forecasted_at: null,
       };
       const project = Project.create(props);
-      project.start();
-      assert.throws(() => project.start(), /Cannot start active project$/);
+      project.start(new Date());
+      assert.throws(() => project.start(new Date()), /Cannot start active project$/);
     });
 
-    it("should throw an error if the project is already completed", function () {
+    test("should throw an error if the project is already completed", function () {
       const props = {
         name: "test",
         description: "test",
@@ -120,11 +121,11 @@ describe("Project Entity", function () {
         forecasted_at: null,
       };
       const project = Project.create(props);
-      project.complete();
-      assert.throws(() => project.start(), /Cannot start completed project$/);
+      project.complete(new Date());
+      assert.throws(() => project.start(new Date()), /Cannot start completed project$/);
     });
 
-    it("should throw an error if the project is already cancelled", function () {
+    test("should throw an error if the project is already cancelled", function () {
       const props = {
         name: "test",
         description: "test",
@@ -132,13 +133,13 @@ describe("Project Entity", function () {
         forecasted_at: null,
       };
       const project = Project.create(props);
-      project.cancel();
-      assert.throws(() => project.start(), /Cannot start cancelled project$/);
+      project.cancel(new Date());
+      assert.throws(() => project.start(new Date()), /Cannot start cancelled project$/);
     });
   });
 
   describe("cancel", function () {
-    it("should cancel the project", function () {
+    test("should cancel the project", function () {
       const props = {
         name: "test",
         description: "test",
@@ -146,12 +147,13 @@ describe("Project Entity", function () {
         forecasted_at: null,
       };
       const project = Project.create(props);
-      project.cancel();
+      const cancelled_at = new Date();
+      project.cancel(cancelled_at);
       assert.strictEqual(project.status, ProjectStatus.Cancelled);
-      assert.ok(project.cancelled_at);
+      assert.strictEqual(project.cancelled_at, cancelled_at);
     });
 
-    it("should throw an error if the project is already completed", function () {
+    test("should throw an error if the project is already completed", function () {
       const props = {
         name: "test",
         description: "test",
@@ -159,11 +161,11 @@ describe("Project Entity", function () {
         forecasted_at: null,
       };
       const project = Project.create(props);
-      project.complete();
-      assert.throws(() => project.cancel(), /Cannot cancel completed project$/);
+      project.complete(new Date());
+      assert.throws(() => project.cancel(new Date()), /Cannot cancel completed project$/);
     });
 
-    it("should throw an error if the project is already cancelled", function () {
+    test("should throw an error if the project is already cancelled", function () {
       const props = {
         name: "test",
         description: "test",
@@ -171,25 +173,13 @@ describe("Project Entity", function () {
         forecasted_at: null,
       };
       const project = Project.create(props);
-      project.cancel();
-      assert.throws(() => project.cancel(), /Cannot cancel cancelled project$/);
-    });
-
-    it("should throw an error if the project is already active", function () {
-      const props = {
-        name: "test",
-        description: "test",
-        started_at: null,
-        forecasted_at: null,
-      };
-      const project = Project.create(props);
-      project.start();
-      assert.throws(() => project.cancel(), /Cannot cancel active project$/);
+      project.cancel(new Date());
+      assert.throws(() => project.cancel(new Date()), /Cannot cancel cancelled project$/);
     });
   });
 
   describe("complete", function () {
-    it("should complete the project", function () {
+    test("should complete the project", function () {
       const props = {
         name: "test",
         description: "test",
@@ -197,12 +187,13 @@ describe("Project Entity", function () {
         forecasted_at: null,
       };
       const project = Project.create(props);
-      project.complete();
+      const finished_at = new Date();
+      project.complete(finished_at);
       assert.strictEqual(project.status, ProjectStatus.Completed);
-      assert.ok(project.finished_at);
+      assert.strictEqual(project.finished_at, finished_at);
     });
 
-    it("should throw an error if the project is already completed", function () {
+    test("should throw an error if the project is already completed", function () {
       const props = {
         name: "test",
         description: "test",
@@ -211,14 +202,14 @@ describe("Project Entity", function () {
         finished_at: new Date(),
       };
       const project = Project.create(props);
-      project.complete();
+      project.complete(new Date());
       assert.throws(
-        () => project.complete(),
+        () => project.complete(new Date()),
         /Cannot complete completed project$/
       );
     });
 
-    it("should throw an error if the project is already cancelled", function () {
+    test("should throw an error if the project is already cancelled", function () {
       const props = {
         name: "test",
         description: "test",
@@ -227,16 +218,16 @@ describe("Project Entity", function () {
         cancelled_at: new Date(),
       };
       const project = Project.create(props);
-      project.cancel();
+      project.cancel(new Date());
       assert.throws(
-        () => project.complete(),
+        () => project.complete(new Date()),
         /Cannot complete cancelled project$/
       );
     });
   });
 
   describe("addTask", function () {
-    it("should add a task to the project", function () {
+    test("should add a task to the project", function () {
       const props = {
         name: "test",
         description: "test",
@@ -249,16 +240,17 @@ describe("Project Entity", function () {
       const task = Task.create({
         name: "test",
         description: "test",
-        started_at: null,
+        started_at: new Date(),
         forecasted_at: null,
         finished_at: null,
       });
       project.addTask(task);
+      assert.strictEqual(project.status, ProjectStatus.Active);
       assert.strictEqual(project.tasks.length, 1);
       assert.strictEqual(project.tasks[0], task);
     });
 
-    it("should throw an error if the project is completed", function () {
+    test("should throw an error if the project is completed", function () {
       const props = {
         name: "test",
         description: "test",
@@ -268,7 +260,7 @@ describe("Project Entity", function () {
         finished_at: new Date(),
       };
       const project = Project.create(props);
-      project.complete();
+      project.complete(new Date());
       const task = Task.create({
         name: "test",
         description: "test",
@@ -282,7 +274,7 @@ describe("Project Entity", function () {
       );
     });
 
-    it("should throw an error if the project is cancelled", function () {
+    test("should throw an error if the project is cancelled", function () {
       const props = {
         name: "test",
         description: "test",
@@ -292,7 +284,7 @@ describe("Project Entity", function () {
         finished_at: null,
       };
       const project = Project.create(props);
-      project.cancel();
+      project.cancel(new Date());
       const task = Task.create({
         name: "test",
         description: "test",

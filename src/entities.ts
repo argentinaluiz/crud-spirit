@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { Column, PrimaryColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
 
 export enum ProjectStatus {
   Pending = "pending",
@@ -8,6 +8,7 @@ export enum ProjectStatus {
   Completed = "completed",
 }
 
+@Entity()
 export class Project {
   @PrimaryColumn()
   id: string;
@@ -18,22 +19,23 @@ export class Project {
   @Column()
   description: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: "datetime" })
   started_at: Date | null = null;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: "datetime" })
   cancelled_at: Date | null = null;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: "datetime" })
   finished_at: Date | null = null;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: "datetime" })
   forecasted_at: Date | null = null;
 
-  @Column()
+  @Column({ type: "simple-enum" })
   status: ProjectStatus = ProjectStatus.Pending;
 
-  tasks: Task[] = [];
+  @OneToMany(() => Task, (task) => task.project, { eager: true, cascade: true })
+  tasks: Task[];
 
   constructor(
     props: {
@@ -53,7 +55,7 @@ export class Project {
   static create(props: {
     name: string;
     description: string;
-    started_at?: Date| null;
+    started_at?: Date | null;
     forecasted_at?: Date | null;
   }) {
     return new Project(props);
@@ -71,7 +73,7 @@ export class Project {
     this.forecasted_at = date;
   }
 
-  start() {
+  start(date: Date) {
     if (this.status === ProjectStatus.Active) {
       throw new Error("Cannot start active project");
     }
@@ -84,11 +86,11 @@ export class Project {
       throw new Error("Cannot start cancelled project");
     }
 
-    this.started_at = new Date();
+    this.started_at = date;
     this.status = ProjectStatus.Active;
   }
 
-  cancel() {
+  cancel(date: Date) {
     if (this.status === ProjectStatus.Completed) {
       throw new Error("Cannot cancel completed project");
     }
@@ -97,17 +99,17 @@ export class Project {
       throw new Error("Cannot cancel cancelled project");
     }
 
-    if (this.status === ProjectStatus.Active) {
-      throw new Error("Cannot cancel active project");
+    if (date < this.started_at!) {
+      throw new Error("Cannot cancel project before it started");
     }
 
-    this.cancelled_at = new Date();
+    this.cancelled_at = date;
     this.status = ProjectStatus.Cancelled;
 
-    this.tasks.forEach((task) => task.cancel());
+    this.tasks?.forEach((task) => task.cancel());
   }
 
-  complete() {
+  complete(date: Date) {
     if (this.status === ProjectStatus.Completed) {
       throw new Error("Cannot complete completed project");
     }
@@ -116,14 +118,23 @@ export class Project {
       throw new Error("Cannot complete cancelled project");
     }
 
-    this.finished_at = new Date();
+    if (date < this.started_at!) {
+      throw new Error("Cannot complete project before it started");
+    }
+
+    this.finished_at = date;
     this.status = ProjectStatus.Completed;
 
+    if (!this.tasks) {
+      return;
+    }
+
     const pendingOrActiveTasks = this.tasks.filter(
-      (task) => task.status === TaskStatus.Pending || task.status === TaskStatus.Active
+      (task) =>
+        task.status === TaskStatus.Pending || task.status === TaskStatus.Active
     );
 
-    if(pendingOrActiveTasks.length > 0) {
+    if (pendingOrActiveTasks.length > 0) {
       throw new Error("Cannot complete project with pending or active tasks");
     }
   }
@@ -137,8 +148,20 @@ export class Project {
       throw new Error("Cannot add task to cancelled project");
     }
 
-    if (task.started_at && this.started_at && task.started_at < this.started_at) {
+    if (this.status === ProjectStatus.Pending && task.started_at) {
+      this.start(task.started_at);
+    }
+
+    if (
+      task.started_at &&
+      this.started_at &&
+      task.started_at < this.started_at
+    ) {
       throw new Error("Cannot add task to project before project started");
+    }
+
+    if (!this.tasks) {
+      this.tasks = [];
     }
 
     this.tasks.push(task);
@@ -152,6 +175,7 @@ export enum TaskStatus {
   Completed = "completed",
 }
 
+@Entity()
 export class Task {
   @PrimaryColumn()
   id: string;
@@ -162,26 +186,29 @@ export class Task {
   @Column()
   description: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: "datetime" })
   started_at: Date | null = null;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: "datetime" })
   cancelled_at: Date | null = null;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: "datetime" })
   finished_at: Date | null = null;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: "datetime" })
   forecasted_at: Date | null = null;
 
-  @Column()
+  @Column({ type: "simple-enum" })
   status = TaskStatus.Pending;
+
+  @ManyToOne(() => Project, (project) => project.tasks)
+  project: Project;
 
   constructor(
     props: {
       name: string;
       description: string;
-      started_at: Date | null;
+      started_at?: Date | null;
       cancelled_at?: Date | null;
       finished_at?: Date | null;
       forecasted_at?: Date | null;
@@ -195,7 +222,7 @@ export class Task {
   static create(props: {
     name: string;
     description: string;
-    started_at: Date | null;
+    started_at?: Date | null;
     finished_at?: Date | null;
     forecasted_at?: Date | null;
   }) {
