@@ -89,6 +89,17 @@ app.post("/projects/:id/tasks", async (req, res) => {
     res.json(task);
 });
 
+app.put("/projects/:id", async (req, res) => {
+    const { id } = req.params;
+    const { name, description, forecasted_at = null } = req.body;
+    const project = await projectService.update(id, {
+        name,
+        description,
+        forecasted_at: forecasted_at ? new Date(forecasted_at) : null,
+    });
+    res.json(project);
+});
+
 app.post("/projects/:id/tasks/:task_id/start", async (req, res) => {
     const { id, task_id } = req.params;
     const { started_at } = req.body;
@@ -110,6 +121,16 @@ app.post("/projects/:id/tasks/:task_id/complete", async (req, res) => {
     res.json(task);
 });
 
+app.put("/projects/:id/tasks/:task_id", async (req, res) => {
+    const { id, task_id } = req.params;
+    const { name, description, forecasted_at = null } = req.body;
+    const task = await projectService.updateTask(id, task_id, {
+        name,
+        description,
+        forecasted_at: forecasted_at ? new Date(forecasted_at) : null,
+    });
+    res.json(task);
+});
 
 
 app.listen(3000, () => {

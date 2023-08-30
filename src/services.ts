@@ -47,6 +47,21 @@ export class ProjectService {
     return this.projectRepo.save(project);
   }
 
+  async update(
+    id: string,
+    props: {
+      name?: string;
+      description?: string;
+      forecasted_at?: Date | null;
+    }
+  ) {
+    const project = await this.projectRepo.findOneOrFail({ where: { id } });
+    props.name && project.changeName(props.name);
+    props.description && project.changeDescription(props.description);
+    props.forecasted_at && project.changeForecastedDate(props.forecasted_at);
+    return this.projectRepo.save(project);
+  }
+
   async addTask(props: {
     project_id: string;
     name: string;
@@ -105,6 +120,29 @@ export class ProjectService {
       throw new Error("Task not found");
     }
     task.complete(finished_at);
+    await this.projectRepo.save(project);
+    return task;
+  }
+
+  async updateTask(
+    project_id: string,
+    task_id: string,
+    props: {
+      name?: string;
+      description?: string;
+      forecasted_at?: Date | null;
+    }
+  ) {
+    const project = await this.projectRepo.findOneOrFail({
+      where: { id: project_id },
+    });
+    const task = project.tasks.find((task) => task.id === task_id);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+    props.name && task.changeName(props.name);
+    props.description && task.changeDescription(props.description);
+    props.forecasted_at && task.changeForecastedDate(props.forecasted_at);
     await this.projectRepo.save(project);
     return task;
   }

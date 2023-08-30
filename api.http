@@ -10,8 +10,55 @@ Content-Type: application/json
 }
 
 ###
-
-@project_id = 7c7aab23-6f01-4ba2-ab6b-0b544f33f500
+@project_id = b10c5c2d-d5ad-48d6-a54c-042d9a503810
 
 ###
 POST http://localhost:3000/projects/{{project_id}}/start
+
+###
+POST http://localhost:3000/projects/{{project_id}}/complete
+
+###
+POST http://localhost:3000/projects/{{project_id}}/cancel
+
+###
+PUT http://localhost:3000/projects/{{project_id}}
+Content-Type: application/json
+
+{
+    "name": "Projeto 1111",
+    "description": "Descrição do projeto 11111",
+    "forecasted_at": "2021-01-01"
+}
+
+###
+POST http://localhost:3000/projects/{{project_id}}/tasks
+Content-Type: application/json
+
+{
+    "name": "Tarefa 1",
+    "description": "Descrição da tarefa 1",
+    "forecasted_at": "2021-01-01"
+}
+
+###
+@task_id = 94f12d73-ec7b-470e-ad14-c470eb3f967c
+
+###
+POST http://localhost:3000/projects/{{project_id}}/tasks/{{task_id}}/start
+
+###
+POST http://localhost:3000/projects/{{project_id}}/tasks/{{task_id}}/complete
+
+###
+POST http://localhost:3000/projects/{{project_id}}/tasks/{{task_id}}/cancel
+
+###
+PUT http://localhost:3000/projects/{{project_id}}/tasks/{{task_id}}
+Content-Type: application/json
+
+{
+    "name": "Tarefa 1111",
+    "description": "Descrição da tarefa 1222",
+    "forecasted_at": "2021-01-01"
+}
