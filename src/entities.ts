@@ -58,7 +58,9 @@ export class Project {
     started_at?: Date | null;
     forecasted_at?: Date | null;
   }) {
-    return new Project(props);
+    const project = new Project(props);
+    props.started_at && project.start(props.started_at);
+    return project;
   }
 
   changeName(name: string) {
@@ -106,7 +108,14 @@ export class Project {
     this.cancelled_at = date;
     this.status = ProjectStatus.Cancelled;
 
-    this.tasks?.forEach((task) => task.cancel());
+    if(!this.tasks) {
+      return;
+    }
+
+    const pendingOrActiveTasks = this.tasks.filter(
+      (task) => task.status === TaskStatus.Pending
+    );
+    pendingOrActiveTasks.forEach((task) => task.cancel(date));
   }
 
   complete(date: Date) {
@@ -226,10 +235,12 @@ export class Task {
     finished_at?: Date | null;
     forecasted_at?: Date | null;
   }) {
-    return new Task(props);
+    const task = new Task(props);
+    props.started_at && task.start(props.started_at);
+    return task;
   }
 
-  start() {
+  start(date: Date) {
     if (this.status === TaskStatus.Active) {
       throw new Error("Cannot start active task");
     }
@@ -242,11 +253,11 @@ export class Task {
       throw new Error("Cannot start cancelled task");
     }
 
-    this.started_at = new Date();
+    this.started_at = date;
     this.status = TaskStatus.Active;
   }
 
-  cancel() {
+  cancel(date: Date) {
     if (this.status === TaskStatus.Completed) {
       throw new Error("Cannot cancel completed task");
     }
@@ -255,11 +266,11 @@ export class Task {
       throw new Error("Cannot cancel cancelled task");
     }
 
-    this.cancelled_at = new Date();
+    this.cancelled_at = date;
     this.status = TaskStatus.Cancelled;
   }
 
-  complete() {
+  complete(date: Date) {
     if (this.status === TaskStatus.Completed) {
       throw new Error("Cannot complete completed task");
     }
@@ -268,7 +279,7 @@ export class Task {
       throw new Error("Cannot complete cancelled task");
     }
 
-    this.finished_at = new Date();
+    this.finished_at = date;
     this.status = TaskStatus.Completed;
   }
 

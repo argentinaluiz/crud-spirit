@@ -29,17 +29,27 @@ describe("Project Entity", function () {
       const props = {
         name: "test",
         description: "test",
-        started_at: new Date(),
+        started_at: null,
         forecasted_at: null,
       };
-      const project = Project.create(props);
+      
+      let project = Project.create(props);
+      
       assert.strictEqual(project.name, "test");
       assert.strictEqual(project.description, "test");
       assert.strictEqual(project.started_at, props.started_at);
       assert.strictEqual(project.cancelled_at, null);
       assert.strictEqual(project.finished_at, null);
       assert.strictEqual(project.forecasted_at, null);
+      assert.strictEqual(project.status, ProjectStatus.Pending);
       assert.ok(project.id.length);
+
+      project = Project.create({
+        ...props,
+        started_at: new Date(),
+      });
+
+      assert.strictEqual(project.status, ProjectStatus.Active);
     });
   });
 
@@ -109,7 +119,6 @@ describe("Project Entity", function () {
         forecasted_at: null,
       };
       const project = Project.create(props);
-      project.start(new Date());
       assert.throws(() => project.start(new Date()), /Cannot start active project$/);
     });
 

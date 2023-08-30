@@ -6,17 +6,13 @@ import assert from "node:assert";
 describe("Project Entity Integration", () => {
   let dataSource: DataSource;
   beforeEach(async () => {
-    try {
-      dataSource = new DataSource({
-        type: "sqlite",
-        database: ":memory:",
-        entities: [Project, Task],
-      });
-      await dataSource.initialize();
-      await dataSource.synchronize(true);
-    } catch (error) {
-      console.log(error);
-    }
+    dataSource = new DataSource({
+      type: "sqlite",
+      database: ":memory:",
+      entities: [Project, Task],
+    });
+    await dataSource.initialize();
+    await dataSource.synchronize(true);
   });
 
   it("should create a project", async () => {
@@ -65,7 +61,10 @@ describe("Project Entity Integration", () => {
       id: project.id,
     });
     assert.strictEqual(newProject.status, ProjectStatus.Cancelled);
-    assert.strictEqual(newProject.cancelled_at?.getTime(), cancelled_at.getTime());
+    assert.strictEqual(
+      newProject.cancelled_at?.getTime(),
+      cancelled_at.getTime()
+    );
   });
 
   it("should complete a project", async () => {
@@ -84,7 +83,10 @@ describe("Project Entity Integration", () => {
       id: project.id,
     });
     assert.strictEqual(newProject.status, ProjectStatus.Completed);
-    assert.strictEqual(newProject.finished_at?.getTime(), finished_at.getTime());
+    assert.strictEqual(
+      newProject.finished_at?.getTime(),
+      finished_at.getTime()
+    );
   });
 
   it("should add a task in a project", async () => {
@@ -95,7 +97,7 @@ describe("Project Entity Integration", () => {
     const task = Task.create({
       name: "test",
       description: "test description",
-      started_at: new Date()
+      started_at: new Date(),
     });
     project.addTask(task);
     await dataSource.manager.save(project);
