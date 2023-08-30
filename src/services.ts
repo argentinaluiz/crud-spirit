@@ -20,6 +20,7 @@ export class ProjectService {
     finished_at?: Date | null;
     forecasted_at?: Date | null;
   }) {
+    console.log(props);
     const project = Project.create({
       name: props.name,
       description: props.description,

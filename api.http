@@ -1,0 +1,17 @@
+GET http://localhost:3000/projects
+
+###
+POST http://localhost:3000/projects
+Content-Type: application/json
+
+{
+    "name": "Projeto 1",
+    "description": "Descrição do projeto 1"
+}
+
+###
+
+@project_id = 7c7aab23-6f01-4ba2-ab6b-0b544f33f500
+
+###
+POST http://localhost:3000/projects/{{project_id}}/start
